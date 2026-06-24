@@ -94,6 +94,17 @@ button{
   color:black;
   border-color:#eab308;
 }
+.available{
+border:5px solid #22c55e !important;
+box-shadow:0 0 18px #22c55e;
+animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.05);}
+100%{transform:scale(1);}
+}
 
 @media (max-width:900px){
 
@@ -236,37 +247,63 @@ function startGame(){
       board.appendChild(cell);
     }
   }
+  updateAvailableCells();
 }
+
+
 
 function claimCell(cell,row,col){
 
-  if(gameOver) return;
-  if(boardState[row][col] !== "") return;
+if(gameOver) return;
 
-  boardState[row][col] = currentPlayer;
-  cell.classList.add(currentPlayer);
-
-  if(checkWin(row,col,currentPlayer)){
-    gameOver = true;
-
-    winnerText.textContent =
-      currentPlayer === "red"
-      ? "🎉 Red Team Wins!"
-      : "🎉 Yellow Team Wins!";
-
-    return;
-  }
-
-  currentPlayer =
-    currentPlayer === "red"
-    ? "yellow"
-    : "red";
-
-  statusText.textContent =
-    currentPlayer === "red"
-    ? "🔴 Red Team's Turn"
-    : "🟡 Yellow Team's Turn";
+if(boardState[row][col] !== ""){
+alert("This space is already taken.");
+return;
 }
+
+let lowestEmpty = -1;
+
+for(let r = ROWS - 1; r >= 0; r--){
+if(boardState[r][col] === ""){
+lowestEmpty = r;
+break;
+}
+}
+
+if(row !== lowestEmpty){
+alert("⚠ Choose the bottom empty space first!");
+return;
+}
+
+boardState[row][col] = currentPlayer;
+cell.classList.add(currentPlayer);
+updateAvailableCells();
+
+if(checkWin(row,col,currentPlayer)){
+gameOver = true;
+
+winnerText.textContent =
+  currentPlayer === "red"
+  ? "🎉 Red Team Wins!"
+  : "🎉 Yellow Team Wins!";
+return;
+
+}
+
+currentPlayer =
+currentPlayer === "red"
+? "yellow"
+: "red";
+
+statusText.textContent =
+currentPlayer === "red"
+? "🔴 Red Team's Turn"
+: "🟡 Yellow Team's Turn";
+}
+
+
+
+
 
 function countDirection(row,col,dr,dc,player){
 
@@ -301,6 +338,30 @@ function countDirection(row,col,dr,dc,player){
   return count;
 }
 
+
+function updateAvailableCells(){
+
+document.querySelectorAll(".cell")
+.forEach(cell=>cell.classList.remove("available"));
+
+for(let c=0;c<COLS;c++){
+
+for(let r=ROWS-1;r>=0;r--){
+
+  if(boardState[r][c] === ""){
+
+    const index = r * COLS + c;
+    board.children[index]
+      .classList.add("available");
+
+    break;
+  }
+}
+
+}
+}
+
+
 function checkWin(row,col,player){
 
   return (
@@ -313,6 +374,8 @@ function checkWin(row,col,player){
 
 document.getElementById("newGame")
 .addEventListener("click",startGame);
+
+
 
 startGame();
 
